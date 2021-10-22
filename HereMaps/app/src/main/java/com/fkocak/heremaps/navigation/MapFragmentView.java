@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -35,6 +36,7 @@ import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
 import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
+import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.AndroidXMapFragment;
 import com.here.android.mpa.mapping.Map;
@@ -79,6 +81,13 @@ public class MapFragmentView {
     private CustomizableScheme m_colorScheme;
     private CustomizableScheme m_floatScheme;
 
+    private PositioningManager positioningManager = null;
+    private PositioningManager.OnPositionChangedListener positionListener;
+    private GeoCoordinate currentPosition = null;
+
+    private Boolean firstCentered = false;
+
+
     public MapFragmentView(AppCompatActivity activity) {
         m_activity = activity;
         initMapFragment();
@@ -115,6 +124,32 @@ public class MapFragmentView {
                         initFloatPropertyButton();
                         initColorPropertyButton();
                         initSettingsPanel();
+
+                        positioningManager = PositioningManager.getInstance();
+                        positionListener = new PositioningManager.OnPositionChangedListener() {
+                            @Override
+                            public void onPositionUpdated(PositioningManager.LocationMethod method, GeoPosition position, boolean isMapMatched) {
+                                if (!firstCentered) {
+                                    firstCentered = true;
+                                    currentPosition = position.getCoordinate();
+                                    m_map.setCenter(position.getCoordinate(), Map.Animation.NONE);
+                                }
+                            }
+
+                            @Override
+                            public void onPositionFixChanged(PositioningManager.LocationMethod method, PositioningManager.LocationStatus status) {
+                            }
+                        };
+
+                        try {
+                            positioningManager.addListener(new WeakReference<>(positionListener));
+                            if (!positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
+                                Log.e("HERE", "PositioningManager.start: Failed to start...");
+                            }
+                        } catch (Exception e) {
+                            Log.e("HERE", "Caught: " + e.getMessage());
+                        }
+
                     } else {
                         new AlertDialog.Builder(m_activity).setMessage(
                                 "Error : " + error.name() + "\n\n" + error.getDetails())
@@ -199,7 +234,13 @@ public class MapFragmentView {
 
         /* Define waypoints for the route */
         /* START: 4350 Still Creek Dr */
-        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(39.879196, 32.836989));
+        RouteWaypoint startPoint = null;
+        
+        if(currentPosition != null){
+            startPoint = new RouteWaypoint(currentPosition);
+        } else {
+            startPoint = new RouteWaypoint(new GeoCoordinate(39.879196, 32.836989));
+        }
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(39.881900, 32.837445));
 
