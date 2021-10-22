@@ -39,7 +39,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
 
     implementation 'com.google.code.gson:gson:2.8.8'
-    implementation files('/Users/fatihkocak/Desktop/HERE_Android_SDK_Premium_v3.18.5_248/HERE-sdk/libs/HERE-sdk.aar')
+    implementation files('libs/HERE-sdk.aar')
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
