@@ -19,6 +19,8 @@ package com.fkocak.heremaps.search;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -70,6 +72,8 @@ public class MapFragmentView {
     private PositioningManager.OnPositionChangedListener positionListener;
     private GeoCoordinate currentPosition = null;
 
+    private Boolean firstCentered = false;
+
     public MapFragmentView(AppCompatActivity activity) {
         m_activity = activity;
         /*
@@ -104,17 +108,21 @@ public class MapFragmentView {
                         positionListener = new PositioningManager.OnPositionChangedListener() {
                             @Override
                             public void onPositionUpdated(PositioningManager.LocationMethod method, GeoPosition position, boolean isMapMatched) {
-                                currentPosition = position.getCoordinate();
-                                m_map.setCenter(position.getCoordinate(), Map.Animation.NONE);
+                                if (!firstCentered) {
+                                    firstCentered = true;
+                                    currentPosition = position.getCoordinate();
+                                    m_map.setCenter(position.getCoordinate(), Map.Animation.NONE);
+                                }
                             }
 
                             @Override
-                            public void onPositionFixChanged(PositioningManager.LocationMethod method, PositioningManager.LocationStatus status) { }
+                            public void onPositionFixChanged(PositioningManager.LocationMethod method, PositioningManager.LocationStatus status) {
+                            }
                         };
 
                         try {
                             positioningManager.addListener(new WeakReference<>(positionListener));
-                            if(!positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
+                            if (!positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
                                 Log.e("HERE", "PositioningManager.start: Failed to start...");
                             }
                         } catch (Exception e) {
