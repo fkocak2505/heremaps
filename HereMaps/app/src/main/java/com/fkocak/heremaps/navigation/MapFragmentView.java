@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.fkocak.heremaps.R;
 import com.here.android.mpa.common.GeoBoundingBox;
@@ -165,8 +166,8 @@ public class MapFragmentView {
     private void initSettingsPanel() {
         m_map.setTrafficInfoVisible(true);
         m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.ONROUTE, true);
-        m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.FLOW, true);
-        m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.INCIDENT, true);
+        m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.FLOW, false);
+        m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.INCIDENT, false);
         m_map.getMapTrafficLayer().setDisplayFilter(TrafficEvent.Severity.VERY_HIGH);
     }
 
@@ -226,6 +227,8 @@ public class MapFragmentView {
 
                                 /* Show the maneuver number on top of the route */
                                 mapRoute.setManeuverNumberVisible(true);
+                                mapRoute.setTrafficEnabled(true);
+                                mapRoute.setTraveledColor(ContextCompat.getColor(m_activity,R.color.black));
 
                                 /* Add the MapRoute to the map */
                                 m_map.addMapObject(mapRoute);
