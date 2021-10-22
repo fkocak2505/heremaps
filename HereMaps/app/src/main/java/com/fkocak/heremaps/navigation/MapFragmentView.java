@@ -33,6 +33,7 @@ import com.fkocak.heremaps.R;
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
+import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.AndroidXMapFragment;
@@ -52,6 +53,7 @@ import com.here.android.mpa.routing.RouteWaypoint;
 import com.here.android.mpa.routing.Router;
 import com.here.android.mpa.routing.RoutingError;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -228,7 +230,7 @@ public class MapFragmentView {
                                 /* Show the maneuver number on top of the route */
                                 mapRoute.setManeuverNumberVisible(true);
                                 mapRoute.setTrafficEnabled(true);
-                                mapRoute.setTraveledColor(ContextCompat.getColor(m_activity,R.color.black));
+                                mapRoute.setTraveledColor(ContextCompat.getColor(m_activity, R.color.black));
 
                                 /* Add the MapRoute to the map */
                                 m_map.addMapObject(mapRoute);
@@ -322,6 +324,13 @@ public class MapFragmentView {
         // show position indicator
         // note, it is also possible to change icon for the position indicator
         m_mapFragment.getPositionIndicator().setVisible(true);
+        Image image = new Image();
+        try {
+            image.setImageResource(R.drawable.ic_pacman);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        m_mapFragment.getPositionIndicator().setMarker(image);
 
         /*
          * Start the turn-by-turn navigation.Please note if the transport mode of the passed-in
