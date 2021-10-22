@@ -19,16 +19,20 @@ package com.fkocak.heremaps.search;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fkocak.heremaps.R;
 import com.here.android.mpa.common.GeoCoordinate;
+import com.here.android.mpa.common.GeoPosition;
 import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
+import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.mapping.AndroidXMapFragment;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapMarker;
@@ -46,6 +50,7 @@ import com.here.android.mpa.search.ResultListener;
 import com.here.android.mpa.search.SearchRequest;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +65,10 @@ public class MapFragmentView {
     private Map m_map;
     private Button m_placeDetailButton;
     private List<MapObject> m_mapObjectList = new ArrayList<>();
+
+    private PositioningManager positioningManager = null;
+    private PositioningManager.OnPositionChangedListener positionListener;
+    private GeoCoordinate currentPosition = null;
 
     public MapFragmentView(AppCompatActivity activity) {
         m_activity = activity;
@@ -91,6 +100,28 @@ public class MapFragmentView {
                         m_map.setCenter(new GeoCoordinate(39.86734, 32.85293),
                                 Map.Animation.NONE);
                         m_map.setZoomLevel(13.2);
+                        positioningManager = PositioningManager.getInstance();
+                        positionListener = new PositioningManager.OnPositionChangedListener() {
+                            @Override
+                            public void onPositionUpdated(PositioningManager.LocationMethod method, GeoPosition position, boolean isMapMatched) {
+                                currentPosition = position.getCoordinate();
+                                m_map.setCenter(position.getCoordinate(), Map.Animation.NONE);
+                            }
+
+                            @Override
+                            public void onPositionFixChanged(PositioningManager.LocationMethod method, PositioningManager.LocationStatus status) { }
+                        };
+
+                        try {
+                            positioningManager.addListener(new WeakReference<>(positionListener));
+                            if(!positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
+                                Log.e("HERE", "PositioningManager.start: Failed to start...");
+                            }
+                        } catch (Exception e) {
+                            Log.e("HERE", "Caught: " + e.getMessage());
+                        }
+
+                        m_map.getPositionIndicator().setVisible(true);
                     } else {
                         new AlertDialog.Builder(m_activity).setMessage(
                                 "Error : " + error.name() + "\n\n" + error.getDetails())

@@ -18,7 +18,7 @@
         android:hardwareAccelerated="true"
         android:theme="@style/Theme.HereMaps">
         <activity
-            android:name=".navigation.MainActivity"
+            android:name=".search.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
